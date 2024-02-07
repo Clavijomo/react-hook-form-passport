@@ -1,6 +1,7 @@
 import { Alert, Button, Divider, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup, Stack, TextField, TextareaAutosize, useMediaQuery } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import moment from "moment";
 import { useForm } from "react-hook-form";
 import theme from "../theme/themeApp";
 
@@ -14,12 +15,12 @@ interface FormFieldsProps {
   phone: string
   jornal: string
   comments: string
-  expeditionDateDocument: string  
+  expeditionDateDocument: string
 }
 
 const Form = () => {
   const smallSize = useMediaQuery(theme.breakpoints.down('sm'));
-  const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<FormFieldsProps>({
+  const { register, setValue, getValues, handleSubmit, reset, watch, formState: { errors } } = useForm<FormFieldsProps>({
     defaultValues: {
       email: "",
       name: "",
@@ -35,6 +36,9 @@ const Form = () => {
   });
 
   const onSubmit = handleSubmit((data) => {
+    const formatter = moment().format('DD-MMM-YYYY');
+    setValue("expeditionDateDocument", formatter);
+    console.log(getValues("expeditionDateDocument"))
     console.log("Formulario enviado", data);
     reset();
   });
@@ -42,7 +46,7 @@ const Form = () => {
   return (
     <form onSubmit={onSubmit} style={{ gap: 3 }}>
       <pre>
-        {watch()}
+        {JSON.stringify(watch(), null, 3)}
       </pre>
       <Stack margin={"10px 0px"} gap={1}>
         <TextField
@@ -145,9 +149,18 @@ const Form = () => {
       </Stack>
       <Stack margin={"10px 0px"} gap={1}>
         <FormLabel>Fecha de expedicion del documento</FormLabel>
-        <LocalizationProvider {...register("expeditionDateDocument")} dateAdapter={AdapterDayjs}>
-          <DatePicker label="Fecha" />
-        </LocalizationProvider>
+        <TextField
+          type="date"
+          {...register("expeditionDateDocument", {
+            required: {
+              message: "La fecha de expedición es requerida",
+              value: true
+            }
+          })}
+        />
+        {errors.expeditionDateDocument &&
+          <Alert severity="error">{errors.expeditionDateDocument.message as string}</Alert>
+        }
         <Divider />
         <FormLabel>Fecha de nacimiento</FormLabel>
         <LocalizationProvider dateAdapter={AdapterDayjs}>

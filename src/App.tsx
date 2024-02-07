@@ -1,5 +1,5 @@
 import { BrowseGalleryOutlined as BrowseGalleryOutlinedIcon, CalendarMonthOutlined as CalendarMonthOutlinedIcon, FmdGoodOutlined as FmdGoodOutlinedIcon } from '@mui/icons-material';
-import { Grid, Icon, LinearProgress, List, ListItem, ThemeProvider, Typography, useMediaQuery } from "@mui/material";
+import { Grid, LinearProgress, List, ListItem, ThemeProvider, Typography, useMediaQuery } from "@mui/material";
 import Form from './components/Form';
 import theme from "./theme/themeApp";
 
