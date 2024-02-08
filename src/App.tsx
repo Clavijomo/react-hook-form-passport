@@ -1,5 +1,5 @@
 import { BrowseGalleryOutlined as BrowseGalleryOutlinedIcon, CalendarMonthOutlined as CalendarMonthOutlinedIcon, FmdGoodOutlined as FmdGoodOutlinedIcon } from '@mui/icons-material';
-import { Grid, LinearProgress, List, ListItem, ThemeProvider, Typography, useMediaQuery } from "@mui/material";
+import { Grid, List, ListItem, ThemeProvider, Typography, useMediaQuery } from "@mui/material";
 import Form from './components/Form';
 import theme from "./theme/themeApp";
 
@@ -45,7 +45,6 @@ function App() {
           </Grid>
         )}
         <Grid item xs={12} lg={6} overflow={"auto"} height={"100%"} gap={1} padding={"20px"}>
-          <LinearProgress sx={{ margin: "20px 0px" }} variant="determinate" value={10} />
           <Typography variant={`${minSm ? "h5" : "h5"}`} sx={{ fontWeight: 500 }} margin={"10px 0px"}>Agendamiento de pasaporte</Typography>
           <Typography color={theme.palette.grey[800]} variant="body1">Diligencia correctamente la información de la persona que se desea agendar la cita en la cancillería para  el trámite del pasaporte teniendo en cuenta lo siguiente:</Typography>
           <List sx={{ margin: "10px 0px", flexDirection: "column", display: "flex", gap: 1 }}>

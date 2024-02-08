@@ -1,7 +1,8 @@
-import { Alert, Button, Divider, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup, Stack, TextField, TextareaAutosize, useMediaQuery } from "@mui/material";
+import { Alert, Button, Divider, FormControl, FormControlLabel, FormLabel, LinearProgress, Radio, RadioGroup, Stack, TextField, TextareaAutosize, useMediaQuery } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import moment from "moment";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import theme from "../theme/themeApp";
 
@@ -10,7 +11,7 @@ interface FormFieldsProps {
   name: string
   lastName: string
   identificationNumber: string
-  sede: string
+  headquarters: string
   identificationType: string
   phone: string
   jornal: string
@@ -19,8 +20,10 @@ interface FormFieldsProps {
 }
 
 const Form = () => {
+  const [progress, setProgress] = useState<number>(0);
   const smallSize = useMediaQuery(theme.breakpoints.down('sm'));
-  const { register, setValue, getValues, handleSubmit, reset, watch, formState: { errors } } = useForm<FormFieldsProps>({
+
+  const { register, setValue, handleSubmit, reset, watch, formState: { errors } } = useForm<FormFieldsProps>({
     defaultValues: {
       email: "",
       name: "",
@@ -29,79 +32,159 @@ const Form = () => {
       expeditionDateDocument: "",
       lastName: "",
       phone: "",
-      sede: "",
+      headquarters: "",
       jornal: "",
       comments: ""
     }
   });
+  
+  const registerFormField = useMemo(() => {
+    return {
+      email: register("email", {
+        required: {
+          message: "El correo es requerido",
+          value: true
+        },
+        pattern: {
+          value: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/,
+          message: "El correo no es válido"
+        }
+      }),
+      headquarters: register("headquarters", {
+        required: {
+          message: "La sede es requerida",
+          value: true
+        }
+      }),
+      name: register("name", {
+        required: {
+          message: "El nombre es requerido",
+          value: true
+        }
+      }),
+      lastName: register("lastName", {
+        required: {
+          message: "El apellido es requerido",
+          value: true
+        }
+      }),
+      identificationType: register('identificationType', {
+        required: {
+          message: 'El tipo de identificación es requerido',
+          value: true
+        }
+      }),
+      identificationNumber: register("identificationNumber", {
+        required: {
+          message: "El número de identificación es requerido",
+          value: true
+        }
+      }),
+      expeditionDateDocument: register("expeditionDateDocument", {
+        required: {
+          message: "La fecha de expedición del documento es requerida",
+          value: true
+        }
+      }),
+      phone: register("phone", {
+        required: {
+          message: "El número de celular es requerido",
+          value: true
+        }
+      }),
+      jornal: register("jornal", {
+        required: {
+          message: "La jornada es requerida",
+          value: true
+        }
+      })
+    }
+  }, [])
+  const registerHandleChange = () => {
+    const nameInput = { ...registerFormField.name }
+    const textFieldEmail = { ...registerFormField.email }
+    const textFieldLastname = { ...registerFormField.lastName }
+    const textFieldIdType = { ...registerFormField.identificationType }
+    const textFieldIdNumber = { ...registerFormField.identificationNumber }
+    const textFieldDateExpeditionDate = { ...registerFormField.expeditionDateDocument }
+    const textFieldPhoneNumber = { ...registerFormField.phone }
+    const textFieldJornal = { ...registerFormField.jornal }
 
-  const onSubmit = handleSubmit((data) => {
+    return {
+      nameInput,
+      textFieldLastname,
+      textFieldEmail,
+      textFieldIdNumber,
+      textFieldDateExpeditionDate,
+      textFieldIdType,
+      textFieldPhoneNumber,
+      textFieldJornal
+    }
+  }
+
+  const handleChange = (e: any) => {
+    if (e.target.value) {
+      setProgress((prevProgress) => prevProgress + 12.5)
+      return
+    } 
+  }
+
+  const onSubmit = handleSubmit(() => {
     const formatter = moment().format('DD-MMM-YYYY');
     setValue("expeditionDateDocument", formatter);
-    console.log(getValues("expeditionDateDocument"))
-    console.log("Formulario enviado", data);
     reset();
   });
 
   return (
     <form onSubmit={onSubmit} style={{ gap: 3 }}>
+      <Stack bgcolor={"background.paper"} position={"sticky"} top={"0"}>
+        <LinearProgress sx={{ margin: "20px 0px" }} variant="determinate" value={progress} />
+      </Stack>
+
       <pre>
         {JSON.stringify(watch(), null, 3)}
       </pre>
       <Stack margin={"10px 0px"} gap={1}>
         <TextField
+          onBlurCapture={(e) => {
+            registerFormField.email.onChange(e)
+            handleChange(e)
+          }}
           fullWidth
-          {...register("email", {
-            required: {
-              message: "El email es requerido",
-              value: true
-            },
-            pattern: {
-              value: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/,
-              message: "El correo no es válido"
-            }
-          })}
+          {...registerFormField.email}
           label={"Correo electrónico"}
         />
-        {errors.email && errors.sede && <Alert severity={"error"}>{errors.email?.message}</Alert>}
+        {errors.email && errors.email && <Alert severity={"error"}>{errors.email?.message}</Alert>}
         <Divider />
       </Stack>
       <Stack margin={"10px 0px"} gap={1}>
         <FormControl>
           <FormLabel id="demo-radio-buttons-group-label">Sede:</FormLabel>
-          <RadioGroup {...register("sede", {
-            required: {
-              message: "La sede es requerida",
-              value: true
-            }
-          })}>
-            <FormControlLabel value={"Sede calle 100"} control={<Radio />} {...register("sede")} label="Sede calle 100" />
-            <FormControlLabel value={"Sede Centro"} control={<Radio />} {...register("sede")} label="Sede Centro" />
+          <RadioGroup {...registerFormField.headquarters}>
+            <FormControlLabel value={"Sede calle 100"} control={<Radio />} {...register("headquarters")} label="Sede calle 100" />
+            <FormControlLabel value={"Sede Centro"} control={<Radio />} {...register("headquarters")} label="Sede Centro" />
           </RadioGroup>
         </FormControl>
-        {errors.sede && <Alert severity={"error"}>{errors.sede?.message}</Alert>}
+        {errors.headquarters && <Alert severity={"error"}>{errors.headquarters?.message}</Alert>}
       </Stack>
       <Divider />
       <Stack margin={"10px 0px"} gap={1}>
         <FormLabel id="demo-radio-buttons-group-label">Nombre:</FormLabel>
         <Stack direction={`${smallSize ? "column" : "row"}`} alignItems={"center"} gap={1}>
           <TextField
-            {...register("name", {
-              required: {
-                message: "El nombre es requeridos",
-                value: true
-              }
-            })}
             fullWidth
-            label={"Nombre(s)"}
+            {...registerFormField.name}
+            onBlurCapture={(e) => {
+              registerHandleChange().nameInput.onChange(e)
+              handleChange(e)
+            }}
           />
           <TextField
-            {...register("lastName", {
-              required: {
-                message: "Los apellidos son requeridos",
-                value: true
-              }
-            })}
+            {...registerFormField.name}
+            onBlur={(e) => {
+              registerHandleChange().textFieldLastname.onChange(e)
+              handleChange(e)
+            }}
             fullWidth
             label={"Apellidos"}
           />
@@ -117,15 +200,25 @@ const Form = () => {
       <Stack margin={"10px 0px"}>
         <FormControl>
           <FormLabel id="demo-radio-buttons-group-label">Tipo de identificación</FormLabel>
-          <RadioGroup {...register("identificationType", {
-            required: {
-              message: "El tipo de identificación es requerida",
-              value: true
-            }
-          })}>
-            <FormControlLabel value={"Cedula"} {...register("identificationType")} label="Cédula" control={<Radio />} />
-            <FormControlLabel label="Cedula de extranjería" {...register("identificationType")} value={"Extranjería"} control={<Radio />} />
-            <FormControlLabel label="Tarjeta de identidad" {...register("identificationType")} value={"Tarjeta de identidad"} control={<Radio />} />
+          <RadioGroup {...registerFormField.identificationType}>
+            <FormControlLabel
+              onClick={(e) => {
+                registerHandleChange().textFieldIdType.onBlur(e)
+                handleChange(e)
+              }}
+              value={"Cedula"} {...registerFormField.identificationType} label="Cédula" control={<Radio />} />
+            <FormControlLabel
+              onClick={(e) => {
+                registerHandleChange().textFieldIdType.onBlur(e)
+                handleChange(e)
+              }}
+              label="Cedula de extranjería" {...registerFormField.identificationType} value={"Extranjería"} control={<Radio />} />
+            <FormControlLabel
+              onClick={(e) => {
+                registerHandleChange().textFieldIdType.onBlur(e)
+                handleChange(e)
+              }}
+              label="Tarjeta de identidad" {...registerFormField.identificationType} value={"Tarjeta de identidad"} control={<Radio />} />
           </RadioGroup>
         </FormControl>
         {errors.identificationType &&
@@ -136,12 +229,11 @@ const Form = () => {
       <Stack margin={"10px 0px"} gap={1}>
         <FormLabel id="demo-radio-buttons-group-label">Número de identificación</FormLabel>
         <TextField
-          {...register("identificationNumber", {
-            required: {
-              message: "El número de identificación es requerido",
-              value: true
-            }
-          })} label={"Numero de identificacion"} type="number" />
+          onBlurCapture={(e) => {
+            registerHandleChange().textFieldIdNumber.onChange(e)
+            handleChange(e)
+          }}
+          {...registerFormField.identificationNumber} label={"Numero de identificacion"} type="number" />
         {errors.identificationNumber &&
           <Alert severity="error">{errors.identificationNumber?.message}</Alert>
         }
@@ -149,15 +241,7 @@ const Form = () => {
       </Stack>
       <Stack margin={"10px 0px"} gap={1}>
         <FormLabel>Fecha de expedicion del documento</FormLabel>
-        <TextField
-          type="date"
-          {...register("expeditionDateDocument", {
-            required: {
-              message: "La fecha de expedición es requerida",
-              value: true
-            }
-          })}
-        />
+        <TextField {...registerFormField.expeditionDateDocument} type="date" />
         {errors.expeditionDateDocument &&
           <Alert severity="error">{errors.expeditionDateDocument.message as string}</Alert>
         }
@@ -170,27 +254,30 @@ const Form = () => {
       <Divider />
       <Stack margin={"10px 0px"} gap={1}>
         <FormLabel>Celular</FormLabel>
-        <TextField {...register("phone", {
-          required: {
-            message: "El número de celular es requerido",
-            value: true
-          }
-        })} label={"Numero de celular"} type="number" />
+        <TextField
+          onBlurCapture={(e) => {
+            registerHandleChange().textFieldPhoneNumber.onChange(e)
+            handleChange(e)
+          }}
+          {...registerFormField.phone} label={"Numero de celular"} type="number" />
         {errors.phone && <Alert severity="error">{errors.phone.message}</Alert>}
         <Divider />
       </Stack>
       <Stack margin={"10px 0px"} gap={1}>
         <FormLabel>Preferencia de jornada agendamiento cita</FormLabel>
-        <RadioGroup
-          {...register("jornal", {
-            required: {
-              message: "La jornada de agendamiento de la cita es requerida",
-              value: true
-            }
-          })}
-        >
-          <FormControlLabel {...register("jornal")} value={"Mañana"} control={<Radio />} label="Mañana" />
-          <FormControlLabel {...register("jornal")} value={"Tarde"} control={<Radio />} label="Tarde" />
+        <RadioGroup {...registerFormField.jornal} >
+          <FormControlLabel
+            onClick={(e) => {
+              registerHandleChange().textFieldJornal.onChange(e)
+              handleChange(e)
+            }}
+            {...registerFormField.jornal} value={"Mañana"} control={<Radio />} label="Mañana" />
+          <FormControlLabel
+            onClick={(e) => {
+              registerHandleChange().textFieldJornal.onChange(e)
+              handleChange(e)
+            }}
+            {...registerFormField.jornal} value={"Tarde"} control={<Radio />} label="Tarde" />
         </RadioGroup>
         {errors.jornal && <Alert severity="error">{errors.jornal.message}</Alert>}
         <Divider />
