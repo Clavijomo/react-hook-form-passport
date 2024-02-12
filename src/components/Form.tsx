@@ -5,25 +5,13 @@ import moment from "moment";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import theme from "../theme/themeApp";
-
-interface FormFieldsProps {
-  email: string
-  name: string
-  lastName: string
-  identificationNumber: string
-  headquarters: string
-  identificationType: string
-  phone: string
-  jornal: string
-  comments: string
-  expeditionDateDocument: string
-}
+import { FormFieldsProps } from "../interfaces/Form";
 
 const Form = () => {
   const [progress, setProgress] = useState<number>(0);
   const smallSize = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { register, setValue, handleSubmit, reset, watch, formState: { errors } } = useForm<FormFieldsProps>({
+  const { register, setValue, handleSubmit, getValues, reset, watch, formState: { errors } } = useForm<FormFieldsProps>({
     defaultValues: {
       email: "",
       name: "",
@@ -37,7 +25,7 @@ const Form = () => {
       comments: ""
     }
   });
-  
+
   const registerFormField = useMemo(() => {
     return {
       email: register("email", {
@@ -100,6 +88,7 @@ const Form = () => {
       })
     }
   }, [])
+  
   const registerHandleChange = () => {
     const nameInput = { ...registerFormField.name }
     const textFieldEmail = { ...registerFormField.email }
@@ -123,10 +112,14 @@ const Form = () => {
   }
 
   const handleChange = (e: any) => {
+    console.log(errors.email?.message )
     if (e.target.value) {
-      setProgress((prevProgress) => prevProgress + 12.5)
-      return
-    } 
+      if (!getValues("email")){
+        setProgress((prevProgress) => prevProgress + 12.5)
+        return
+      }
+    }
+    setProgress((prevProgress) => prevProgress - 12.5)
   }
 
   const onSubmit = handleSubmit(() => {
@@ -146,6 +139,7 @@ const Form = () => {
       </pre>
       <Stack margin={"10px 0px"} gap={1}>
         <TextField
+          
           onBlurCapture={(e) => {
             registerFormField.email.onChange(e)
             handleChange(e)
